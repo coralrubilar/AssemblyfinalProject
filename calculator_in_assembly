@@ -1,0 +1,780 @@
+												//out put
+					LDA		HI
+					BSA		Puts
+	Main,			LDA		NewLine
+					BSA		Putc
+					BSA		GetSignedInt
+					STA		Num1
+					LDA		COUNT1				//if(COUNT1==0)
+					SZA	
+					BUN 	GOOD
+	E_Num,			LDA		InputErr			//printf("INPUT ERROR");
+					BSA		Puts
+					BSA		startOver
+	GOOD,			LDA 	Num1				//if(Num1<0){printf("INPUT ERROR"); startOver();}
+					SNA
+					BUN 	GOOD1
+					BUN 	E_Num	
+	GOOD1,			LDA		Fequal				//if(Fequal==1){printf("%d",Num1);}			
+					SPA	
+					BUN 	GOOD2
+					BSA		PLUS_F				
+	GOOD2,			BSA		GetSignedInt2		//
+					STA		Num2				
+					SNA							//if(Num2<0){printf("INPUT ERROR"); startOver();}
+					BUN 	GOOD3
+					BUN 	E_Num
+	GOOD3,			LDA		COUNT2	
+					SPA	
+					BUN 	E_Num				
+					LDA		Fplus
+					SZA		
+					BSA		PLUS_F				//if(op=='+')
+					LDA		Fminus
+					SZA
+					BSA		MINUS_f				//if(op=='-')
+					LDA		Fdiv
+					SZA	
+					BSA		DIV_F				//if(op=='/')
+					LDA		Fmulti
+					BSA		MULTI_f				//if(op=='*')
+	END_p,			HLT
+	// 
+	Num1, 			DEC 	0
+	Num2, 			DEC 	0
+	minus_Flag, 	HEX 	0
+	minus_Flag2, 	HEX 	0
+	FMresulte, 		HEX 	0
+	RESULT,			HEX 	0
+	M1, 			HEX 	-1
+	
+	//SUB
+	COUNT1,			DEC 	0
+	COUNT2, 		DEC 	0
+
+
+
+	//PRINT RESULT
+	PRINT_F, 		HEX 	0
+					LDA		FMresulte		//if(FMresulte==1){printf("-");}
+					SPA	
+					BUN		SKIP_m
+					LDA		pMINUS	
+					BSA		Putc		
+	SKIP_m,			LDA		RESULT
+					BSA		PRINT_RESULT	//
+					LDA		ENTER
+					BSA		Putc
+					BSA 	startOver
+					BUN 	PRINT_F	I
+
+	//GET FIRST NUMBER
+	GetSignedInt,  	HEX		0					// short unsigned int GetSignedInt()
+					CLA
+					STA		TNum 				// TNum  = 0;
+					LDA		FlagOFF
+					STA		minus_Flag			// minus_Flag = OFF; 
+	In_char, 		BSA 	Getc				//	
+					STA		Cc					// cc = getc(); 
+					ADD 	minusMinusASCII		// IF (cc= ‘-‘)				
+					SZA		
+					BUN		GetUnsigned
+					LDA 	COUNT1
+					SZA		
+					BUN 	GetUnsigned
+					LDA		FlagOn 				// THEN  
+					STA 	minus_Flag			//	minus_Flag = ON; 
+					BUN 	In_char
+												// FI  					
+	getUnsigned,	LDA		Cc					//
+					BSA 	OP					// if(op()==1){return}
+					SZA
+					BUN		End_loop			//
+	Convert, 		LDA		Cc
+					ADD		MSPACE				//if(Cc==' ')
+					SPA
+					BUN		In_char	
+					LDA 	Cc
+					BSA		EXIT				//EXIT();
+					LDA 	Cc
+					ADD 	MINn
+					SNA
+					BUN 	IS_Number1
+					BUN 	End_loop_EROOR
+	IS_Number1,		LDA		Cc
+					ADD		MAXn
+					SPA
+					BUN		IS_Number2
+					BUN		End_loop_EROOR
+	IS_Number2,		LDA		Cc
+					ADD		mASCII_zero			// char = char – 30H;
+					STA		Cc					// 
+					LDA		TNum 				// 
+					BSA		MultBy10			// TNum  = TNum  * 10 + char; 
+					ADD		Cc					//
+					STA		TNum 				//
+					ISZ 	COUNT1
+					BUN		In_char				// OD;
+	End_loop,		LDA		TNum
+					BUN		GetSignedInt  	I 	// return TNum
+	End_loop_EROOR,	LDA 	M1
+					BUN 	GetSignedInt 	I				
+												//
+
+	// GetUnsignedInt Data 
+	Cc,   			DEC	 	0					// 
+	FlagOn,			DEC		1
+	FlagOff,		DEC		0
+	//
+
+
+	MultBy10,		HEX		0					// short int  MultBy10(short int  a) {
+					CLE							// 
+					CIL							// 
+					STA		tmp					//
+					CIL							// 
+					CIL							// 
+					ADD 	tmp					//      a = a * 10; 
+					BUN		MultBy10   		I 	//      return a }				
+	// MultBy10 data
+	tmp,			DEC		0
+
+
+	
+	OP, 			HEX 	0
+					STA 	TEMP				//TEMP=-TEMP
+					ADD 	PLUS		
+					SZA							//if(TEMP == '+')
+					BUN 	C1			
+					LDA 	FlagOn				//THEN Fplus=FlagOn;
+					STA 	Fplus
+					STA 	Fop
+					BUN 	RETURN_OP			//RETURN;
+	C1,				LDA 	TEMP
+					ADD 	MINUS	
+					SZA							//if(TEMP == '-')
+					BUN 	C2			
+					LDA 	FlagOn				//THEN Fminus=FlagOn;
+					STA 	Fminus
+					STA 	Fop
+					BUN 	RETURN_OP			//RETURN;		
+	C2,				LDA 	TEMP
+					ADD 	DIV	
+					SZA							//if(TEMP == '/')
+					BUN 	C3			
+					LDA 	FlagOn				//THEN Fdiv=FlagOn;
+					STA 	Fdiv
+					STA 	Fop
+					BUN 	RETURN_OP			//RETURN;	
+	C3,				LDA 	TEMP
+					ADD 	MULTI	
+					SZA							//if(TEMP == '*')
+					BUN 	C4			
+					LDA 	FlagOn				//THEN Fmulti=FlagOn;
+					STA 	Fmulti
+					STA 	Fop
+					BUN 	RETURN_OP			//RETURN;	
+	C4,				LDA 	TEMP
+					ADD 	EQAL	
+					SZA							//if(TEMP == '*')
+					BUN 	RETURN_ziro_OP			
+					LDA 	FlagOn				//THEN Fmulti=FlagOn;
+					STA 	Fequal
+					STA 	Fop
+					BUN 	RETURN_OP			//RETURN;
+	RETURN_ziro_OP, CLA
+	RETURN_OP,		BUN 	OP 				I
+
+
+	//OP DATA
+	Fop	,			DEC 	0
+	TEMP, 			HEX 	0
+	Fminus, 		DEC 	0
+	Fplus, 			DEC 	0
+	Fmulti, 		DEC 	0
+	Fdiv, 			DEC 	0
+	Fequal, 		DEC 	0
+
+
+
+	// unsigned integer input conversion routine – decimal to binary
+	GetSignedInt2,  HEX		0					// short unsigned int GetSignedInt()
+					CLA
+					STA		TNum 				// TNum  = 0;
+					LDA		FlagOFF
+					STA		minus_Flag2			// minus_Flag = OFF; 
+	In_char2, 		BSA 	Getc				//	
+					STA		Cc					// cc = getc(); 
+					ADD 	minusMinusASCII		// IF (cc= ‘-‘)				
+					SZA	
+					BUN		GetUnsigned2
+					LDA 	COUNT2
+					SZA		
+					BUN 	GetUnsigned2
+					LDA		FlagOn 				// THEN  
+					STA 	minus_Flag2			//	minus_Flag = ON; 
+					BUN 	In_char2
+													// FI  					
+	getUnsigned2,	LDA		Cc					//
+					BSA 	OP2					// if(op()==1){return}
+					SZA
+					BUN		End_loop2			//
+	Convert2, 		LDA		Cc
+					ADD		MSPACE				//if(Cc==' ')
+					SPA
+					BUN		In_char2	
+					LDA 	Cc
+					BSA		EXIT				//EXIT();
+					LDA 	Cc
+					ADD 	MINn
+					SNA		
+					BUN 	IS_Number3
+					BUN 	End_loop_EROOR2
+	IS_Number3,		LDA		Cc
+					ADD		MAXn
+					SPA
+					BUN		IS_Number4
+					BUN		End_loop_EROOR2
+	IS_Number4,		LDA		Cc
+					ADD		mASCII_zero			//           char = char – 30H;
+					STA		Cc					// 
+					LDA		TNum 				// 
+					BSA		MultBy10			//           TNum  = TNum  * 10 + char; 
+					ADD		Cc					//
+					STA		TNum 				//
+					ISZ 	COUNT2
+					BUN		In_char2			// OD;
+	End_loop2,		LDA		TNum
+					BUN		GetSignedInt2  	I 	// return TNum
+	End_loop_EROOR2,LDA 	M1
+					BUN 	GetSignedInt2	I				
+													
+
+	OP2, 			HEX 	0
+					STA 	TEMP
+					ADD 	EQAL				//(TEMP-EQAL)	
+					SZA							//if(TEMP == '=')
+					BUN 	RETURN_ziro_OP2			
+					LDA 	FlagOn				//THEN Fmulti=FlagOn;
+					STA 	Fequal
+					BUN 	RETURN_OP2			//RETURN;
+	RETURN_ziro_OP2,CLA
+	RETURN_OP2,		BUN 	OP2 			I
+		
+		
+
+	// subroutine getc()
+	Getc,  			HEX		0					// char Getc()  {
+	Inp_charc, 		SKI							// 	
+					BUN		Inp_charc			//
+					INP							//  input char
+	Echo,			SKO							// echo(char) 
+					BUN		Echo				//
+					OUT							// 	
+					BUN		Getc  			I	// r	eturn char }
+
+		
+
+
+	//IF THE USER WRITE 'x'
+	EXIT,			HEX		0			
+					STA		EXIT_TEMP	
+					ADD 	MX
+					SZA							//IF(EXIT_TEMP=='x'){EXIT(1);}
+					BUN		RETURN_EXIT
+					LDA		BYE
+					BSA		Puts
+					BSA		BYE_F
+	RETURN_EXIT,	LDA 	EXIT_TEMP
+					BUN		EXIT			I
+			
+			
+	//EXIT DATA
+	MX,				HEX     -78
+	EXIT_TEMP, 		HEX 	0
+												//							
+	BYE_F, 			HEX 	0
+					HLT
+					BUN		BYE_F 			I
+
+
+	//PRINT-NUMBER 
+
+	PRINT_RESULT,	HEX		0					// PRINT_RESULT (short unsigned int )  {
+					STA 	TNum
+					LDA 	PtrConst
+					STA		temp_PTR
+					LDA		It_Count
+					STA		Count
+					CLA	
+					STA		Fout
+	For_LOOP,		CLA							// Digit = 0;
+					STA		Digit	
+					LDA		Count				// FOR (Count= It_count;  Count>0; Count--)
+					SPA	
+					BUN		After_Loop			// DO
+	While_Loop,		LDA		TNum				//     WHILE (TNum=TNum - 10**Count) > 0)
+					CLE							//DO
+					Add		temp_PTR  		I	
+					STA		TNum
+					SZE							// 	
+					BUN		E_1
+					BUN		E_0
+	E_1,			ISZ		Digit				//Digit++; 
+					ISZ		Fout
+					BUN		While_Loop			//OD; 
+	E_0, 			LDA		Fout
+					SPA
+					BUN 	SKIP
+					LDA		Digit				//output(Digit);
+					ADD		ADD_HEX				//
+					BSA		Putc
+												//
+	SKIP,			LDA		temp_PTR  		I	// 
+					CMA
+					INC
+					ADD		TNum
+					STA		TNum				//       
+					ISZ		temp_PTR
+	FI_E,			LDA		Count
+					ADD		Minus1
+					STA		Count				//	Count--; 
+					BUN		For_LOOP			// OD;
+	After_Loop, 	LDA		TNum
+					ADD	   	ADD_HEX				//
+					BSA		Putc
+					BUN		PRINT_RESULT 	I	// } 
+
+	// PRINT_RESULT data
+	Fout,			HEX		0
+	It_Count,		DEC 	4					// 10 to the power of 4, 3, 2, 1
+	Count,			DEC		0
+	Digit,			DEC		0
+	Minus1,			DEC		-1
+	PtrConst,		HEX 	680
+	TNum,			HEX 	0
+	temp_PTR,		HEX		0
+
+
+	//print char
+	putc, 			HEX		0					// char putc(char cc) {
+	POutLoop,		SKO							// 	output char when Screen ready;
+					BUN		POutLoop			//
+					OUT							//
+					BUN 	putc   			I	// 
+	//
+
+	
+	//PLUS FUNCTION
+	PLUS_F,			HEX 	0
+					CLA 		
+					LDA		minus_Flag			//if(minus_Flag==1){Num1=-Num1;}
+					SPA
+					BUN 	ELSEpf1
+					LDA		Num1
+					CMA
+					INC
+					STA		Num1
+	ELSEpf1,		LDA		minus_Flag2			//if(minus_Flag2==1){Num2=-Num2;}
+					SPA
+					BUN 	ELSEpf2
+					LDA		Num2
+					CMA
+					INC
+					STA		Num2				//		
+	ELSEpf2,		LDA     Num1				//RESULT=Num1+Num2
+					ADD		Num2
+					STA 	RESULT				//if(RESULT<0){FMresulte++;RESULT=-RESULT;}
+					SNA
+					BUN		ENDp
+					LDA 	RESULT
+					CMA
+					INC
+					STA 	RESULT
+					ISZ		FMresulte
+	ENDp,			LDA		RESULT
+					BSA		PRINT_F				//print result
+					BUN 	PLUS_F 			I
+	//
+
+
+	MINUS_f,		HEX		0
+					CLA	
+					STA 	FMresulte
+					STA 	RESULT
+					LDA		minus_Flag			//if(minus_Flag==1){Num1=-Num1;}	
+					SPA
+					BUN 	ELSEpm1
+					LDA		Num1
+					CMA
+					INC
+					STA		Num1
+	ELSEpm1,		LDA		minus_Flag2			//if(minus_Flag2==1){Num2=-Num2;}
+					SPA
+					BUN 	ELSEpm2
+					LDA		Num2
+					CMA
+					INC
+					STA		Num2		
+	ELSEpm2,		LDA     Num2				//RESULT=Num1-Num2
+					CMA
+					INC
+					ADD		Num1
+					STA 	RESULT				//if(RESULT<0){FMresulte++;RESULT=-RESULT;}
+					SNA
+					BUN		ENDpm
+					LDA 	RESULT
+					CMA
+					INC
+					STA 	RESULT
+					ISZ		FMresulte
+	ENDpm,			BSA		PRINT_F
+					BUN 	MINUS_f I
+
+
+					
+					
+	MULTI_f, 		HEX 	0	
+					CLA 	
+					STA 	FMresulte
+					STA		RESULT
+					LDA		Num2						//if(multiplier==0)
+					SZA
+					BUN 	ELSEmu
+	THENmu,			CLA
+					STA 	RESULT
+					BUN 	End_loopMu
+	ELSEmu,			LDA 	Num1						//if(Num1==0)
+					SZA
+					BUN 	ELSEmu2	
+					BUN 	THENmu
+	ELSEmu2,		LDA		Bits
+					CMA
+					INC
+					STA		MinusDigits					// MinusDigits = -Bits; 
+					CLA									// 
+					STA		RESULT						// MultResult = 0;
+					STA		DigitCount					// DigitCount=0;
+	FOR_loopMu,		LDA		DigitCount					// WHILE (DigitCount < Bits)
+					ADD		MinusDigits					//	
+					SZA									//
+					BUN 	BodyMu						//
+					BUN		End_loopMu					//
+														//
+	BodyMu,			LDA		Num2						// DO
+					CIR									//	E = shift_right(Num2)
+					STA		Num2						//
+					SZE									//  	IF (E==1)
+					BUN		THENmu2						//
+					BUN		FImu						//
+	THENmu2,		LDA		RESULT						//	THEN MultResult = MultResult + Num1;
+					ADD		Num1						//
+					STA		RESULT						//
+	FImu,			LDA		Num1						//	FI;
+					CIL									//	Shift(Num1) 1 place to left;  
+					STA		Num1						//
+					ISZ		DigitCount					//	DigitCount++; 
+					BUN		FOR_loopMu					// END; 
+														//
+	End_loopMu,		LDA		minus_Flag2					//if(FMnum1-FMnum2==0){FMresulte++;}
+					CMA
+					INC
+					ADD		minus_Flag
+					SZA
+					ISZ 	FMresulte
+					BSA		PRINT_F
+					LDA 	RESULT
+					BUN		MULTI_f					I
+
+	//MULTI_f data
+	DigitCount,		DEC		0
+	Bits,			DEC		8							// we use only 8 bits from 16
+	MinusDigits,	DEC		0
+
+	//DIVISON
+	DIV_F, 			HEX 	0	
+					LDA		Num2						//IF(Num2==0){printf("eroor");}
+					SZA			
+					BUN		DIVc
+					LDA		DivEroor
+					BSA		Puts
+					BUN 	startOver
+	DIVc,			CLA		
+					STA		COUNT_div
+	LOOP,			LDA		Num2
+					CMA					
+					INC		
+					STA		MNUM2
+					ADD 	Num1
+					SNA			
+					BUN 	ELSEd
+					BSA 	IF_MINUS
+					LDA		COUNT_div
+					BSA		PRINT_RESULT
+					LDA 	Num1
+					BSA		REMINDER
+					BUN		ENDdiv
+	ELSEd,			ISZ		COUNT_div
+					LDA		Num1	
+					ADD		MNUM2
+					STA		Num1
+					BUN		LOOP
+	ENDdiv,			LDA		ENTER
+					BSA		Putc
+					BSA		startOver
+					BUN		DIV_F 					I
+
+	//DATA	DIV_F
+	RESULTd,		HEX 	0
+	COUNT_div,		DEC 	0
+	MNUM2, 			HEX		0
+
+
+
+
+	//RENINDER FUNCTION
+	REMINDER, 		HEX 	0
+					STA 	TNUM1
+					SZA
+					BUN		ELSEr
+					BUN		END_REMINDER	
+	ELSEr,			LDA		TNUM1
+					SNA	
+					BUN 	ELSEr1
+					CMA
+					INC	
+					STA 	TNUM1
+	ELSEr1,			LDA 	SPACE
+					BSA 	Putc
+					LDA 	S1
+					BSA		Putc
+					LDA 	TNUM1
+					BSA 	PRINT_RESULT
+					LDA 	HLF
+					BSA 	Putc
+					LDA 	Num2
+					BSA 	PRINT_RESULT
+					LDA 	S2
+					BSA 	Putc
+	END_REMINDER,	BUN		REMINDER 		I
+	
+//DATA	REMINDER FUNCTION
+	
+	TNUM1, 			HEX 	0
+	COUNTr, 		HEX 	0
+
+		
+//return if the result is negtive or postive
+	IF_MINUS, 		HEX 	0
+					LDA 	minus_Flag
+					CMA
+					INC
+					ADD		minus_Flag2
+					SZA
+					BUN 	ELSE_MINUS
+					BUN 	END_IF_MINUS
+	ELSE_MINUS,		LDA 	pMINUS
+					BSA 	Putc
+	END_IF_MINUS,	BUN 	IF_MINUS 		I		
+	//
+
+
+
+
+
+	//PRINT	STRING'S
+	puts,  			HEX	    0		    		// void Puts( char*  str ) {
+					STA	    pPtr_s				// pPtr = str
+	WLoop_s,		LDA	    pPtr_s  		I	// WHILE ( (*pPtr ) != '\0')
+					SZA			        		//
+					BUN	    DoOutput_s			//
+					BUN	    END_Loop_s			//
+												// DO
+	DoOutput_s,		BSA 	putc				// putc (*pPtr);
+					ISZ	    pPtr_s        		// pPtr_s++;
+					BUN 	WLoop_s       		// OD;
+	//					
+	END_Loop_s, 	BUN		puts  			I 	// }
+	//DATA-puts
+	pPtr_s,			HEX	    0	    			// local temporary pointer
+												//
+										
+										
+	//ASCII-DIGIT	
+	MinusASCII, 	HEX		2D					// “-“ sign in ASCII
+	ADD_HEX,		HEX 	30 					//
+	HLF, 			HEX 	2F					// '/'
+	SPACE, 			HEX 	20					// ' '
+	S1, 			HEX 	28					//'('
+	S2,		 		HEX 	29					//')'
+	POINT, 			HEX 	2E					//'.'
+	NewLine,		HEX		3E
+	ENTER, 			HEX 	D
+	EQAL,   		HEX 	-3D
+	PLUS, 			HEX 	-2B
+	MINUS,  		HEX 	-2D
+	DIV,    		HEX 	-2F
+	MULTI,  		HEX 	-2A
+	pMINUS, 		HEX 	2D					//'-'
+	MSPACE, 		HEX		-20 
+	MINn, 			HEX		-30
+	MAXn,			HEX 	-39
+	mASCII_zero,	HEX		-30					//
+	minusCReturn,	HEX	 	-D					// 
+	
+	// GetSignedInt Data
+	minusMinusASCII,HEX		-2D					// “-“ sign in ASCII 
+
+	//
+	startOver, 		HEX 	0
+					CLA	
+					STA		Num1
+					STA 	Num2
+					STA		RESULT
+					STA 	TNum
+					STA		COUNT1
+					STA		COUNT2
+					LDA		FlagOff
+					STA		Fminus
+					STA 	Fequal
+					STA		Fplus		
+					STA		Fmulti
+					STA		Fdiv
+					STA		Fop
+					STA		minus_Flag
+					STA 	minus_Flag2				//
+					BUN 	Main
+					BUN 	startOver 			I	//
+										
+	//STRINGS AND ARRAY'S
+	// constants for doing division		
+	ORG 680		
+	MinusConst,		DEC		-10000					// -10 ** 4
+					DEC		-1000					// -10 ** 3
+					DEC		-100					// -10 ** 2
+					DEC		-10						// -10 ** 1
+					
+	//
+	//
+	DivEroor, 		HEX 	700						//"ERROR!
+													//Can not divide by 0!"
+	ORG	700	
+					HEX		D
+					HEX		45
+					HEX		52
+					HEX		52
+					HEX		4f
+					HEX 	52
+					HEX 	21
+					HEX 	D
+					HEX 	43
+					HEX 	61
+					HEX 	6e
+					HEX 	20
+					HEX 	6e
+					HEX 	6f
+					HEX 	74
+					HEX 	20
+					HEX 	64
+					HEX 	69
+					HEX 	76
+					HEX 	69
+					HEX 	64
+					HEX 	65
+					HEX 	20
+					HEX		62
+					HEX 	79
+					HEX 	20
+					HEX 	30
+					HEX 	21
+					HEX		D
+					HEX		0
+
+		
+	InputErr,		HEX		740						//"INPUT ERROR"
+	ORG	740	
+					HEX 	D
+					HEX		49
+					HEX		4e	
+					HEX		50
+					HEX		55
+					HEX		54
+					HEX		20
+					HEX		45
+					HEX		52
+					HEX		52
+					HEX		4f
+					HEX		52
+					HEX		D	
+					HEX		0
+				
+				
+	BYE,			HEX 	770						//"BYE"
+	ORG	770	
+					HEX 	D
+					HEX 	42						//B
+					HEX 	59						//Y
+					HEX 	45						//E
+					HEX 	D
+					HEX		0						//
+													//	
+	//"HI, Type '=' for result  , To exit type 'x'.enjoy:)."
+	//
+	HI,				HEX		780						//
+	ORG	780	
+					HEX		48
+					HEX		49
+					HEX		2c
+					HEX		20
+					HEX		54
+					HEX 	79
+					HEX 	70
+					HEX 	65
+					HEX		20
+					HEX		27
+					HEX		3d
+					HEX		27
+					HEX		20
+					HEX		66
+					HEX		6f
+					HEX		72
+					HEX		20
+					HEX		72
+					HEX		65 
+					HEX 	73
+					HEX		75
+					HEX		6c
+					HEX		74
+					HEX		20
+					HEX		20
+					HEX		2c
+					HEX		20
+					HEX		54
+					HEX		6f
+					HEX		20
+					HEX 	65
+					HEX		78
+					HEX		69
+					HEX		74
+					HEX		20
+					HEX		74
+					HEX		79
+					HEX		70
+					HEX		65
+					HEX		20
+					HEX		27
+					HEX		78
+					HEX		27
+					HEX		2e
+					HEX		65 
+					HEX		6e
+					HEX		6a
+					HEX 	6f
+					HEX 	79
+					HEX		3a
+					HEX		29
+					HEX		2e
+					HEX		D
+					HEX		0
+															//END			
+		
